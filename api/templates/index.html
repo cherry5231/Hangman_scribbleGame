@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hangman Game</title>
+    <style>
+        body { font-family: monospace; text-align: center; }
+        pre { font-size: 18px; }
+    </style>
+</head>
+<body>
+
+<h1>Hangman Game</h1>
+
+<pre>{{ hangman }}</pre>
+
+<p>{{ display }}</p>
+
+<p>Attempts left: {{ attempts }}</p>
+
+<p><b>{{ message }}</b></p>
+
+<form method="POST">
+    <input type="text" name="guess" placeholder="Enter letter or 'hint'">
+    <button type="submit">Submit</button>
+</form>
+
+</body>
+</html>
