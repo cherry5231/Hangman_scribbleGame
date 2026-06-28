@@ -6,10 +6,12 @@ from flask import Flask, render_template, request, session, redirect
 from flask_socketio import SocketIO, join_room, leave_room, emit
 
 import string
+import eventlet
+eventlet.monkey_patch()
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 words = {
     "cherry" : "A small red fruit",
     "spiderman": "A Marvel superhero",
@@ -636,5 +638,4 @@ def guess_letter(data):
 )
 
 if __name__ == "__main__":
-    
-    socketio.run(app, debug=True)
+    socketio.run(app, host="0.0.0.0", port=10000)
