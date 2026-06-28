@@ -659,8 +659,7 @@ socket.on("game_update",function(data){
 
     document.getElementById("hangman").textContent =
         data.hangman;
-    document.getElementById("turnPlayer").innerHTML =
-    "🎯 Current Turn : " + data.turn;
+    
 
     document.getElementById("message").innerHTML =
         data.message;
