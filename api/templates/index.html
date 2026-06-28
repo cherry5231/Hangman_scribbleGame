@@ -420,7 +420,7 @@ input::placeholder {
 </form>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
-    const socket = io();
+    const socket = io(window.location.origin);
 
 {% if room_code %}
 socket.emit("join", {
