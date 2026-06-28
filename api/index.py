@@ -3,15 +3,12 @@ import random
 
 from flask import Flask, render_template, request, session, redirect
 
-from flask_socketio import SocketIO, join_room, leave_room, emit
 
-import string
-import eventlet
-eventlet.monkey_patch()
+
+
 app = Flask(__name__)
-app.secret_key = "secret123"
 
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
+
 words = {
     "cherry" : "A small red fruit",
     "spiderman": "A Marvel superhero",
@@ -264,196 +261,6 @@ DEAD
 """,
 ]
 
-def create_room_code():
-    while True:
-        code = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
-
-        if code not in rooms:
-            return code
-
-@app.route("/multiplayer")
-def multiplayer():
-    return render_template(
-        "multiplayer.html",
-        room_code="",
-        players=[],
-        display="",
-        attempts=6,
-        hint="",
-        message="",
-        hangman="",
-        game_over=False
-    )
-@app.route("/create-room")
-def create_room_page():
-
-    code = create_room_code()
-
-    word = random.choice(list(words.keys()))
-    rooms[code] = {
-        "players":["Player1"],
-        "messages":[],
-        "word":word,
-        "hint":words[word],
-        "guessed":[],
-        "attempts":6,
-        "turn":0
-    }
-    return render_template(
-        "room.html",
-        room_code=code,
-        players=rooms[code]["players"],
-        player_name="Player1",
-        display="",
-        attempts=6,
-        hint="",
-        message="Waiting for players...",
-        hangman="",
-        game_over=False
-    )
-   
-
-@app.route("/join-room", methods=["GET", "POST"])
-def join_room_page():
-
-    if request.method == "POST":
-
-        code = request.form["code"].upper()
-
-        if code not in rooms:
-
-            return render_template(
-                "join_room.html",
-                players=0,
-                message="❌ Room Not Found"
-            )
-
-        if len(rooms[code]["players"]) >= 6:
-
-            return render_template(
-                "join_room.html",
-                players=6,
-                message="❌ Room Full"
-            )
-
-        player = f"Player{len(rooms[code]['players'])+1}"
-
-        rooms[code]["players"].append(player)
-
-        return render_template(
-        "room.html",
-        room_code=code,
-        players=rooms[code]["players"],
-        player_name=player,
-        display="",
-        attempts=6,
-        hint="",
-        message=f"{player} Joined!",
-        hangman="",
-        game_over=False
-    )
-
-    return render_template(
-        "join_room.html",
-        players=0,
-        message=""
-    )
-   
-@socketio.on("create_room")
-def create_room():
-
-    code = create_room_code()
-    word = random.choice(list(words.keys()))
-
-    rooms[code] = {
-    "players":["Player1"],
-    "messages":[],
-    "word":word,
-    "hint":words[word],
-    "guessed":[],
-    "attempts":6,
-    "turn":0
-}
-    join_room(code)
-
-    emit("room_created",{
-    "room":code,
-    "players":rooms[code]["players"]
-})
-
-    emit(
-        "update_players",
-        rooms[code]["players"]
-    )
-    
-@socketio.on("join_room")
-def join(data):
-
-    code = data["room"]
-
-    if code not in rooms:
-        emit("error",{"msg":"Room not found"})
-        return
-
-    if len(rooms[code]["players"]) >= 6:
-        emit("error",{"msg":"Room Full"})
-        return
-
-    player = f"Player{len(rooms[code]['players'])+1}"
-
-    rooms[code]["players"].append(player)
-
-    join_room(code)
-
-    emit(
-        "update_players",
-        rooms[code]["players"],
-        room=code
-    )
-@socketio.on("connect_room")
-def connect_room(data):
-
-    code = data["room"]
-
-    join_room(code)
-
-    emit(
-        "update_players",
-        rooms[code]["players"],
-        room=code
-    )
-    
-@socketio.on("disconnect")
-def disconnect():
-
-    # Later we can remove player automatically.
-    pass
-def reset_game():
-    word = random.choice(list(words.keys()))
-    session["word"] = word
-    session["hint"] = words[word]
-    session["guessed"] = []
-    session["attempts"] = 6
-
-@socketio.on("leave_room")
-def leave(data):
-
-    code = data["room"]
-    player = data["player"]
-
-    if code not in rooms:
-        return
-
-    if player in rooms[code]["players"]:
-        rooms[code]["players"].remove(player)
-
-    leave_room(code)
-
-    emit(
-        "update_players",
-        rooms[code]["players"],
-        room=code
-    )
 
 
 @app.route("/restart")
@@ -465,9 +272,7 @@ def restart():
 
 
 
-@app.route("/")
-def home():
-    return render_template("home.html")
+
 
 
 
@@ -546,96 +351,7 @@ def index():
         game_over=game_over,
     )
 
-@socketio.on("send_message")
-def handle_message(data):
 
-    emit(
-        "receive_message",
-        {
-            "player": data["player"],
-            "text": data["text"]
-        },
-        room=data["room"]
-    )
-
-@socketio.on("get_game")
-def get_game(data):
-
-    room = rooms[data["room"]]
-
-    display = ""
-
-    for letter in room["word"]:
-        if letter in room["guessed"]:
-            display += letter + " "
-        else:
-            display += "_ "
-
-    hangman = hangman_stages[6-room["attempts"]]
-
-    emit(
-        "game_update",
-        {
-            "display": display,
-            "attempts": room["attempts"],
-            "hint": room["hint"],
-            "hangman": hangman,
-            "message": "",
-            "turn": room["players"][room["turn"]]
-        }
-    )
-@socketio.on("guess_letter")
-def guess_letter(data):
-
-    room_code = data["room"]
-    guess = data["guess"].lower()
-
-    room = rooms[room_code]
-
-    if guess in room["guessed"]:
-        return
-
-    room["guessed"].append(guess)
-
-    if guess not in room["word"]:
-        room["attempts"] -= 1
-    room["turn"] += 1
-
-    if room["turn"] >= len(room["players"]):
-        room["turn"] = 0
-    display = ""
-
-    for letter in room["word"]:
-        if letter in room["guessed"]:
-            display += letter + " "
-        else:
-            display += "_ "
-
-    if "_" not in display:
-        message = "🎉 You Win!"
-        hangman = hangman_stages[7]
-
-    elif room["attempts"] <= 0:
-        message = "💀 Game Over! Word was " + room["word"]
-        hangman = hangman_stages[6]
-
-    else:
-        message = ""
-        index = max(0, min(5, 6-room["attempts"]))
-        hangman = hangman_stages[index]
-    
-    emit(
-    "game_update",
-    {
-        "display": display,
-        "attempts": room["attempts"],
-        "hint": room["hint"],
-        "hangman": hangman,
-        "message": message,
-        "turn": room["players"][room["turn"]]
-    },
-    room=room_code
-)
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=10000)
+    app.run(debug = True)
