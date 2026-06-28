@@ -7,7 +7,7 @@ from flask import Flask, render_template, request, session, redirect
 
 
 app = Flask(__name__)
-
+app.secret_key = "secret123"
 
 words = {
     "cherry" : "A small red fruit",
@@ -261,12 +261,18 @@ DEAD
 """,
 ]
 
-
+ def reset_game():
+    word = random.choice(list(words.keys()))
+    session["word"] = word
+    session["guessed"] = []
+    session["attempts"] = 6
+    session["hint"] = words[word]
 
 @app.route("/restart")
 def restart():
     reset_game()
-    return redirect("/")
+   
+    return redirect("/single")
 
 
 
