@@ -640,7 +640,7 @@ Leave Room
 
 <script>
 
-const socket = io();
+const socket = io(window.location.origin);
 console.log("Script Loaded");
 socket.emit("get_game",{
     room:"{{ room_code }}"
