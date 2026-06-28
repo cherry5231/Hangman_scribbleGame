@@ -266,6 +266,9 @@ def reset_game():
     session["guessed"] = []
     session["attempts"] = 6
     session["hint"] = words[word]
+@app.route("/")
+def home():
+    return redirect("/single")
 
 @app.route("/restart")
 def restart():
@@ -284,9 +287,6 @@ def restart():
 
 
     
-@app.route("/")
-def home():
-    return redirect("/single")
 
 
 
