@@ -284,7 +284,9 @@ def restart():
 
 
     
-
+@app.route("/")
+def home():
+    return redirect("/single")
 
 
 
