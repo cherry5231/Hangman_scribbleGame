@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Hangman Multiplayer</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:
+    radial-gradient(circle at top,#1e3a8a,#121212 40%),
+    #121212;
+}
+
+.card{
+
+    width:750px;
+    max-width: 95%;
+
+    background:#1a1a1a;
+
+    border-radius:20px;
+
+    padding:45px;
+
+    text-align:center;
+
+    position:relative;
+
+    overflow:hidden;
+}
+
+.card::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:250%;
+    height:250%;
+
+    top:-75%;
+    left:-75%;
+
+    background:conic-gradient(
+        transparent,
+        cyan,
+        transparent,
+        magenta,
+        transparent,
+        cyan,
+        transparent
+    );
+
+    animation:spin 5s linear infinite;
+}
+
+.card::after{
+
+    content:"";
+
+    position:absolute;
+
+    inset:4px;
+
+    background:#1a1a1a;
+
+    border-radius:16px;
+
+    z-index:1;
+}
+
+.content{
+
+    position:relative;
+
+    z-index:2;
+}
+
+pre{
+    font-family: Consolas, "Courier New", monospace;
+    white-space: pre;
+    overflow-x: auto;
+
+    color: white;
+
+    font-size: 18px;
+    line-height: 1.1;
+
+    text-shadow:
+        0 0 8px cyan,
+        0 0 18px cyan;
+
+    margin-bottom:35px;
+}
+button{
+
+    width:260px;
+
+    padding:16px;
+
+    margin:15px;
+
+    border:none;
+
+    border-radius:12px;
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    color:white;
+
+    cursor:pointer;
+
+    background:#00bcd4;
+
+    transition:.25s;
+}
+
+button:hover{
+
+    transform:scale(1.08);
+
+    box-shadow:
+    0 0 15px cyan,
+    0 0 35px cyan;
+}
+
+a{
+    text-decoration:none;
+}
+
+@keyframes spin{
+
+from{
+transform:rotate(0deg);
+}
+
+to{
+transform:rotate(360deg);
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="content">
+
+<pre>
+███╗   ███╗    ██╗   ██╗  ██╗    ████████╗  ██╗
+████╗ ████║    ██║   ██║  ██║    ╚══██╔══╝  ██║
+██╔████╔██║    ██║   ██║  ██║       ██║     ██║
+██║╚██╔╝██║    ██║   ██║  ██║       ██║     ██║
+██║ ╚═╝ ██║    ╚██████╔╝  ███████╗  ██║     ██║
+╚═╝     ╚═╝     ╚═════╝   ╚══════╝  ╚═╝     ╚═╝
+</pre>
+
+<a href="/create-room">
+<button> Create Room</button>
+</a>
+
+<br>
+
+<a href="/join-room">
+<button> Join Room</button>
+</a>
+
+</div>
+
+</div>
+
+</body>
+</html>

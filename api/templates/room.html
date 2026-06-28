@@ -1,8 +1,170 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Hangman Game</title>
-    <style>
+
+<title>Hangman Room</title>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<style>
+
+body{
+    margin:0;
+    padding:20px;
+    font-family:Arial,sans-serif;
+    text-align:center;
+    color:white;
+
+    background:
+    radial-gradient(circle at top,#1e3a8a,#121212 40%),
+    #121212;
+}
+
+.container{
+
+    width:800px;
+    margin:auto;
+
+    background:#1a1a1a;
+
+    border-radius:20px;
+
+    padding:25px;
+}
+
+h1{
+
+    color:cyan;
+
+}
+
+.room{
+
+    font-size:22px;
+
+    color:cyan;
+
+    margin-bottom:10px;
+
+}
+
+.players{
+
+    font-size:20px;
+
+    margin-bottom:20px;
+
+}
+
+pre{
+
+    font-size:28px;
+
+    white-space:pre;
+
+    color:white;
+
+}
+
+.word{
+
+    font-size:40px;
+
+    letter-spacing:10px;
+
+    margin:20px;
+}
+
+input{
+
+    width:80px;
+
+    padding:10px;
+
+    text-align:center;
+
+    font-size:22px;
+
+    border-radius:8px;
+
+    border:none;
+
+}
+
+button{
+
+    padding:12px 20px;
+
+    font-size:18px;
+
+    border:none;
+
+    border-radius:8px;
+
+    background:#00bcd4;
+
+    color:white;
+
+    cursor:pointer;
+
+}
+
+button:hover{
+
+    transform:scale(1.05);
+
+}
+
+.info{
+
+    margin:20px;
+
+    font-size:20px;
+
+}
+
+.message{
+
+    color:cyan;
+
+    font-size:22px;
+
+    margin:15px;
+
+}
+input{
+
+    width:180px;
+
+    padding:10px;
+
+    text-align:center;
+
+    font-size:22px;
+
+    border-radius:8px;
+
+    border:none;
+
+}
+.chatInput{
+
+    width:70%;
+
+    padding:10px;
+
+    text-align:left;
+
+    font-size:18px;
+
+    border-radius:8px;
+
+    border:none;
+
+    margin-right:10px;
+
+}
+
         body { font-family: monospace; text-align: center; }
         pre { font-size: 18px; }
 
@@ -20,7 +182,7 @@ radial-gradient(circle at top, #1e3a8a, #121212 40%),
 }
 
 .container {
-    max-width: 500px;
+    max-width: 800px;
     margin: auto;
     padding: 20px;
     background: #1e1e1e;
@@ -365,11 +527,15 @@ input::placeholder {
 .stop-animation {
     animation: shake 2s ease-out 1;
 }
-    </style>
+
+</style>
+
 </head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <body>
+
+<div class="container">
+
 <h1>
 <pre class = "ascii-title">
     __ O                                                    O __
@@ -379,95 +545,199 @@ input::placeholder {
  ___   ____________________________________________________   ___
 </pre>
 </h1>
-{% if room_code %}
-<h2 style="color:#00ffff;">
-    Room Code: {{ room_code }}
-</h2>
-{% endif %}
+
+<div class="room">
+Room Code : <b>{{ room_code }}</b>
+</div>
+
+
+<div class="players">
+
+    <h2>Players</h2>
+
+    <div id="playerList">
+
+        {% for player in players %}
+            <p>{{ player }}</p>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<hr>
+<h2 id="turnPlayer"></h2>
+<h2>Room Chat</h2>
+
+<div id="chatBox"
+style="
+height:200px;
+overflow-y:auto;
+background:#222;
+padding:10px;
+border-radius:10px;
+margin:20px 0;
+text-align:left;
+">
+</div>
+
+<input
+id="chatInput"
+class="chatInput"
+type="text"
+placeholder="Type a message">
+
+<button id="sendChat">
+Send
+</button>
+
+<hr>
+
 <div class="hangman-card">
-   <pre class="hangman {% if game_over %}stop-animation{% endif %}">
-    {{ hangman }}
-</pre>
+    <pre id="hangman" class="hangman"></pre>
+</div>
+<div class="displaycard" id="display"></div>
+
+
+<div class="info">
+Attempts Left :
+<span id="attempts"></span>
 </div>
 
-<div class = "displaycard">
-<p>{{ display }}</p>
+<div class="info">
+Hint :
+<span id="hint"></span>
 </div>
-<p class = "A">ATTEMPTS LEFT: {{ attempts }}</p>
 
-<p class = "A1"> Hint: {{hint}} </p>
-<p class="messagebox">
-    {{ message }}</p>
+<div class="messagebox" id="message">
+{{ message }}
+</div>
+{% if not game_over %}
 
-<form method="POST">
-    <input
-        type="text"
-        name="guess"
-        maxlength="1"
-       {% if game_over %}disabled{% endif %}
-    >
+<form id="guessForm">
 
-    <button
-        type="submit"
-        {% if game_over %}disabled{% endif %}
-    >
-        Guess
-    </button>
+<input
+id="guess"
+type="text"
+maxlength="1"
+placeholder="Guess"
+required>
+
+<button type="submit">
+Guess
+</button>
+
+<button type="button" id="leaveBtn">
+Leave Room
+</button>
+
 </form>
-<br>
-<form action="/restart">
-    <button type="submit">New Game</button>
-</form>
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+
+{% endif %}
+
+</div>
+
 <script>
-    const socket = io();
 
-{% if room_code %}
-socket.emit("join", {
+const socket = io();
+console.log("Script Loaded");
+socket.emit("get_game",{
+    room:"{{ room_code }}"
+});
+socket.on("game_update",function(data){
+    console.log(data);
+
+    document.getElementById("display").innerHTML =
+        data.display;
+
+    document.getElementById("attempts").innerHTML =
+        data.attempts;
+
+    document.getElementById("hint").innerHTML =
+        data.hint;
+
+    document.getElementById("hangman").textContent =
+        data.hangman;
+    document.getElementById("turnPlayer").innerHTML =
+    "🎯 Current Turn : " + data.turn;
+
+    document.getElementById("message").innerHTML =
+        data.message;
+        
+});
+socket.emit("connect_room", {
     room: "{{ room_code }}"
 });
-{% endif %}
-function beep(freq, duration) {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+socket.on("update_players", function(players){
 
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
+    let html = "";
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
+    players.forEach(function(player){
 
-    oscillator.frequency.value = freq;
-    oscillator.type = "square";
+        html += "<p>" + player + "</p>";
 
-    oscillator.start();
+    });
 
-    setTimeout(() => {
-        oscillator.stop();
-    }, duration);
+    document.getElementById("playerList").innerHTML = html;
+
+});
+document.getElementById("sendChat").onclick = function(){
+
+    let text = document.getElementById("chatInput").value;
+
+    if(text.trim() == "")
+        return;
+
+    socket.emit("send_message",{
+
+        room:"{{ room_code }}",
+
+        player:"{{ player_name }}",
+
+        text:text
+
+    });
+
+    document.getElementById("chatInput").value="";
+
+};
+socket.on("receive_message",function(data){
+
+    document.getElementById("chatBox").innerHTML +=
+        "<p><b>"+data.player+":</b> "+data.text+"</p>";
+
+});
+
+document.getElementById("guessForm").onsubmit=function(e){
+
+    e.preventDefault();
+
+    
+    let guess=document.getElementById("guess").value;
+
+    socket.emit("guess_letter",{
+        room:"{{ room_code }}",
+        guess:guess
+    });
+
+    document.getElementById("guess").value="";
 }
 
-const message = "{{ message }}";
+document.getElementById("leaveBtn").onclick=function(){
 
-if (message === "Correct!") {
-    beep(800, 100);
-}
+    socket.emit("leave_room",{
 
-if (message === "Wrong!") {
-    beep(250, 200);
-}
+        room:"{{ room_code }}",
+        player:"{{ player_name }}"
 
-if (message === "You Win!") {
-    beep(800, 100);
-    setTimeout(() => beep(1000, 100), 100);
-    setTimeout(() => beep(1200, 150), 200);
-}
+    });
 
-if (message.includes("Game Over")) {
-    beep(400, 200);
-    setTimeout(() => beep(300, 200), 200);
-    setTimeout(() => beep(200, 300), 400);
+    window.location="/multiplayer";
+
 }
 </script>
+
 
 </body>
 </html>

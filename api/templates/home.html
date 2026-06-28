@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HangMan</title>
+
+<style>
+
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:radial-gradient(circle at top,#1e3a8a,#121212 40%),#121212;
+    font-family:Arial,sans-serif;
+    color:white;
+}
+
+.card{
+    width:550px;
+    padding:40px;
+    text-align:center;
+
+    background:#1a1a1a;
+    border-radius:20px;
+    box-shadow:0 0 25px rgba(0,0,0,.5);
+}
+
+pre{
+    color:cyan;
+    font-size:18px;
+    text-shadow:0 0 10px cyan;
+}
+
+button{
+
+    width:250px;
+    padding:15px;
+    margin:15px;
+
+    font-size:22px;
+    font-weight:bold;
+
+    background:#00bcd4;
+    color:white;
+
+    border:none;
+    border-radius:10px;
+
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+a{
+    text-decoration:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<pre>
+     _ _O                                          O __
+    /  /\__              HANG MAN                __/\  \
+    __/\                                            /\__
+      _/                                            \_  
+    _____________________________________________________
+</pre>
+
+<a href="/single">
+<button>Single Player</button>
+</a>
+
+<br>
+
+<a href="/multiplayer">
+    <button>Multiplayer</button>
+</a>
+
+</div>
+
+</body>
+</html>
