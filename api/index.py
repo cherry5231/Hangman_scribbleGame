@@ -260,8 +260,7 @@ DEAD
  I'M FREE!!
 """,
 ]
-
- def reset_game():
+def reset_game():
     word = random.choice(list(words.keys()))
     session["word"] = word
     session["guessed"] = []
@@ -302,15 +301,14 @@ def index():
     message = ""
 
     if request.method == "POST" and attempts > 0:
-        guess = request.form["guess"].lower()
+        guess = request.form.get("guess", "").strip().lower()
 
         # FIX: "hint" is checked before the single-letter-length check now,
         # otherwise it always failed the len(guess) != 1 test first and the
         # hint branch was unreachable.
-        if guess == "hint":
-            message = hint
-        elif len(guess) != 1:
-            message = "Enter only one letter."
+        if len(guess) != 1:
+          message = "Enter only one letter." 
+      
         elif guess in guessed:
             message = "Already guessed!"
         elif guess in word:
