@@ -66,18 +66,7 @@ Hangman/
 
 ---
 
-##  Screenshots
 
-You can add screenshots of your game here.
-
-Example:
-
-```
-screenshots/home.png
-screenshots/gameplay.png
-```
-
----
 
 ##  Future Improvements
 
